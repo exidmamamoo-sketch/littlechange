@@ -1,0 +1,996 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>輕盈日常</title><link rel="stylesheet" href="fonts/fonts.css"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<style>
+:root{
+  /* Layout: one calm column. Reward fund first, then the three totals, the 14-day strip, tonight's check-in, the week grid, body numbers, and the shelf of things bought. */
+  --bg:#F2F6F5; --surface:#FFFFFF; --ink:#13262B; --muted:#566A6F; --line:#D3DFDD;
+  --done:#1E7F72; --done-soft:#DDEFEB; --on-done:#FFFFFF;
+  --coin:#A5631A; --coin-soft:#F6E7CF; --coin-ink:#7A4710; --on-coin:#FFFFFF;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-num:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A1D; --surface:#15262A; --ink:#E4EFEC; --muted:#93A9AD; --line:#27393D;
+    --done:#5CC4B2; --done-soft:#1B3A37; --on-done:#0B1A18;
+    --coin:#E3A653; --coin-soft:#3B2E1A; --coin-ink:#F0BE78; --on-coin:#1A1206;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A1D; --surface:#15262A; --ink:#E4EFEC; --muted:#93A9AD; --line:#27393D;
+  --done:#5CC4B2; --done-soft:#1B3A37; --on-done:#0B1A18;
+  --coin:#E3A653; --coin-soft:#3B2E1A; --coin-ink:#F0BE78; --on-coin:#1A1206;
+  color-scheme:dark;
+}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:15px; line-height:1.65;
+  padding-block:28px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+*{box-sizing:border-box}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--done);outline-offset:2px}
+.wrap{max-width:680px;margin-inline:auto;display:flex;flex-direction:column;gap:30px}
+
+/* header */
+.eyebrow{margin:0 0 6px;font:500 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:.03em;text-wrap:balance}
+.lede{margin:8px 0 0;font-size:17px;font-weight:500;max-width:30em}
+.votes{margin:4px 0 0;color:var(--muted);font-size:14px}
+h2{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:.02em;text-wrap:balance}
+.num{font-family:var(--f-num);font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.help{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.cnote{margin:0;font-size:12.5px;color:var(--muted);line-height:1.55}
+
+/* reward */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 20px;display:flex;flex-direction:column;gap:20px}
+.card.soft{background:transparent;border-style:dashed}
+.rhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.wish{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 14px}
+.wname{font-size:20px;font-weight:700;letter-spacing:.02em;overflow-wrap:anywhere;min-width:0}
+.wprice{font:500 14px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.bal{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bal .num{font-size:46px;color:var(--coin-ink)}
+.bal span.lab{font-size:13px;color:var(--muted)}
+.bump{animation:bump .7s ease-out}
+@keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.bump{animation:none}}
+.meter{position:relative;height:26px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter .mfill{position:absolute;inset:0 auto 0 0;background:var(--coin);border-radius:6px 0 0 6px;min-width:0}
+.meter .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--surface);opacity:.9}
+.mrow{display:flex;justify-content:space-between;gap:10px;font:500 11px var(--f-mono);color:var(--muted);margin-top:-12px}
+.pace{margin:0;font-size:14px}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.mini>div{display:flex;flex-direction:column;gap:5px;padding:2px 12px;border-left:1px solid var(--line)}
+.mini>div:first-child{padding-left:0;border-left:0}
+.mini .num{font-size:24px}
+.lab{font-size:12px;line-height:1.4;color:var(--muted)}
+.weekline{margin:0;font-size:14px;padding:10px 12px;background:var(--coin-soft);border-radius:8px;color:var(--ink)}
+.racts{display:flex;flex-wrap:wrap;gap:10px}
+.coinbtn{min-height:44px;padding:0 20px;border:1px solid var(--coin);border-radius:8px;background:var(--surface);color:var(--coin-ink);font-weight:700;letter-spacing:.03em;cursor:pointer}
+.coinbtn.solid{background:var(--coin);color:var(--on-coin)}
+.coinbtn.armed{background:var(--coin-soft)}
+.coinbtn.solid.armed{background:var(--coin-ink);border-color:var(--coin-ink)}
+.rule{margin:0;font-size:12.5px;color:var(--muted)}
+.ghost{min-height:40px;padding:0 12px;border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ghost.armed{color:var(--coin-ink);font-weight:700}
+.sform{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 0;border-block:1px solid var(--line)}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:13px;font-weight:700}
+.field input{min-height:42px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+.field.wide{grid-column:1/-1}
+.sform .actions{grid-column:1/-1}
+
+/* totals */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.stats>div{display:flex;flex-direction:column;gap:6px;padding:2px 14px;border-left:1px solid var(--line)}
+.stats>div:first-child{padding-left:0;border-left:0}
+.stats .num{font-size:40px}
+.stats .num small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.keepnote{margin:-14px 0 0;font-size:13.5px;color:var(--coin-ink)}
+
+/* day strip */
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin-bottom:12px}
+.legend{font-size:12px;color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;min-width:0}
+.day .wd{font-size:11px;line-height:1.2;color:var(--muted)}
+.day .dn{font-family:var(--f-num);font-size:19px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.day .mark{display:flex;gap:2px;width:62%}
+.day .mark i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.day .mark i.on{background:var(--done)}
+.day.is-full{background:var(--done-soft)}
+.day.is-today .wd{color:var(--ink);font-weight:700}
+.day.is-sel{outline:2px solid var(--ink);outline-offset:1px}
+.pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:var(--muted)}
+.pick input{min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+
+/* check-in */
+.ehead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.etag{font:500 11px/1 var(--f-mono);letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 8px}
+.habit{display:flex;flex-direction:column;gap:8px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.hhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.hname{font-size:15px;font-weight:700;letter-spacing:.02em}
+.pay{font:500 12.5px var(--f-mono);color:var(--muted);padding:2px 9px;border-radius:999px;border:1px solid transparent;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pay.on{background:var(--coin-soft);color:var(--coin-ink)}
+.opts{display:grid;gap:8px}
+.opts.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opts.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opts.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.opt{min-height:42px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font-weight:500;padding:0 6px}
+.opt[aria-pressed="true"]{background:var(--done);border-color:var(--done);color:var(--on-done)}
+.opt.neg[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+@media (prefers-reduced-motion:no-preference){.opt,.day,.coinbtn,.sw{transition:background-color .12s,border-color .12s,color .12s}}
+.adv{display:flex;flex-direction:column;gap:12px}
+.adv h3{margin:0;font-size:15px;font-weight:700}
+.swrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.swrow .t{display:flex;flex-direction:column;min-width:0}
+.swrow .t b{font-size:14px}
+.sw{flex:none;width:52px;height:30px;border-radius:999px;border:1px solid var(--line);background:var(--line);position:relative;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface)}
+.sw[aria-checked="true"]{background:var(--done);border-color:var(--done)}
+.sw[aria-checked="true"]::after{left:25px}
+.lbl{display:block;margin:0 0 8px;font-size:14px;font-weight:700}
+.winin{width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.total{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:14px}
+.total .num{font-size:30px;color:var(--coin-ink)}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.primary{min-height:46px;padding:0 28px;border:0;border-radius:8px;background:var(--done);color:var(--on-done);font-weight:700;letter-spacing:.06em;cursor:pointer}
+.primary:disabled{opacity:.55;cursor:default}
+.status{font-size:13px;color:var(--muted);min-height:1.4em}
+.status.warn{color:var(--coin-ink)}
+.status.ok{color:var(--coin-ink);font-weight:700}
+
+/* week grid */
+.wgrid{display:grid;grid-template-columns:minmax(0,6em) minmax(0,1fr) 2.4em;gap:10px;align-items:center}
+.wgrid .wh{font:500 11px var(--f-mono);color:var(--muted);text-align:center}
+.wcells{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.wc{height:22px;border-radius:4px;background:var(--line)}
+.wc.on{background:var(--done)}
+.wc.fut{opacity:.45}
+.wc.td{outline:2px solid var(--ink);outline-offset:1px}
+.wl{font-size:14px}
+.wn{font:500 13px var(--f-mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.wdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+
+/* body numbers */
+.bform{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+details.inb{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+details.inb summary{cursor:pointer;font-size:14px;font-weight:700}
+details.inb .bform{margin-top:12px}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;font-weight:500;color:var(--muted)}
+td.good{color:var(--done);font-weight:700}
+.chartbox{position:relative;width:100%}
+.chartbox svg{display:block;width:100%;height:auto}
+.ctx{fill:var(--muted);font:11px var(--f-mono)}
+.ctx.strong{fill:var(--ink);font-weight:500}
+.cgrid{stroke:var(--line);stroke-width:1}
+.ctip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font:12px var(--f-mono);padding:5px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-120%)}
+.recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.recent li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.recent li span{min-width:0;overflow-wrap:anywhere}
+
+/* shelf */
+.shelf{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.shelf li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.shelf .sn{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.shelf .sm{font:500 12.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.foot{margin:0;font-size:12.5px;color:var(--muted)}
+
+@media (max-width:420px){
+  h1{font-size:26px}
+  .stats .num{font-size:34px}
+  .stats>div{padding-inline:10px}
+  .bal .num{font-size:40px}
+  .card{padding:20px 16px}
+  .mini .num{font-size:21px}
+  .mini>div{padding-inline:8px}
+}
+</style>
+
+<style>/* app */html{-webkit-text-size-adjust:100%}input,textarea,select{font-size:16px}</style>
+<main class="wrap">
+  <header>
+    <p class="eyebrow" id="today-label"></p>
+    <h1>輕盈日常</h1>
+    <p class="lede">我是在好好照顧身體的人。</p>
+    <p class="votes" id="votes"></p>
+  </header>
+
+  <section class="card" aria-labelledby="h-wish">
+    <div class="rhead">
+      <h2 id="h-wish">願望基金</h2>
+      <button type="button" class="ghost" id="set-toggle" aria-expanded="false" aria-controls="settings">設定</button>
+    </div>
+    <div class="sform" id="settings" hidden>
+      <div class="field wide"><label for="s-wish">想買的東西</label><input id="s-wish" type="text" maxlength="40" placeholder="例如：一雙好走的運動鞋"></div>
+      <div class="field"><label for="s-price">價格（元）</label><input id="s-price" type="number" inputmode="numeric" min="50" max="1000000" step="50"></div>
+      <div class="field"><label for="s-rate">每個好行為存（元）</label><input id="s-rate" type="number" inputmode="numeric" min="5" max="1000" step="5"></div>
+      <div class="field"><label for="s-target">目標體重（kg）</label><input id="s-target" type="number" inputmode="decimal" min="35" max="150" step="0.1"></div>
+      <div class="actions"><button type="button" class="primary" id="s-save">儲存設定</button><span class="status" id="s-status" role="status" aria-live="polite"></span></div>
+    </div>
+    <div class="wish">
+      <span class="wname" id="wname"></span>
+      <span class="wprice" id="wprice"></span>
+    </div>
+    <div class="bal"><span class="num" id="bal">$0</span><span class="lab">已存下來</span></div>
+    <div>
+      <div class="meter" id="meter" role="img" aria-label="願望進度"><div class="mfill" id="mfill"></div></div>
+    </div>
+    <p class="pace" id="pace"></p>
+    <div class="mini" aria-label="帳目">
+      <div><span class="num" id="m-earn">$0</span><span class="lab">累積獲得</span></div>
+      <div><span class="num" id="m-xfer">$0</span><span class="lab">已轉入帳戶</span></div>
+      <div><span class="num" id="m-pend">$0</span><span class="lab">待轉入</span></div>
+    </div>
+    <p class="weekline" id="weekline"></p>
+    <div class="racts">
+      <button type="button" class="coinbtn" id="xfer" hidden></button>
+      <button type="button" class="coinbtn solid" id="buy" hidden>買下它</button>
+    </div>
+    <p class="help" id="xhelp" hidden>把待轉入的錢真的轉進你的願望帳戶（或放進存錢罐），再按「已轉入」。錢只增加，不會因為漏做而扣掉。</p>
+    <p class="rule">這筆錢只買身體、生活、興趣用得到的東西，不買酒精和垃圾食物。</p>
+    <p class="help" id="fade" hidden></p>
+  </section>
+
+  <section class="stats" aria-label="摘要">
+    <div><span class="num" id="st-streak">0</span><span class="lab">連續做到的天數<br>（一天漏掉不算斷）</span></div>
+    <div><span class="num" id="st-core">0<small>/21</small></span><span class="lab">近 7 天核心習慣<br>做到幾次</span></div>
+    <div><span class="num" id="st-weight">—</span><span class="lab" id="st-wlab"></span></div>
+  </section>
+  <p class="keepnote" id="keepnote" hidden></p>
+
+  <section aria-labelledby="h-days">
+    <div class="sec-head">
+      <h2 id="h-days">最近 14 天</h2>
+      <span class="legend" aria-hidden="true">每格由左到右：走路・外食・無糖</span>
+    </div>
+    <div class="days" id="days"></div>
+    <label class="pick" for="pick">補記更早的日子
+      <input type="date" id="pick">
+    </label>
+  </section>
+
+  <section class="card" id="entry" aria-labelledby="entry-title">
+    <div>
+      <div class="ehead"><h2 id="entry-title"></h2><span class="etag" id="entry-tag"></span></div>
+      <p class="help" style="margin-top:6px">晚餐後、洗澡前先記這一頁，約 30 秒，不要躺在床上記。累的日子只做最小版本也算數。</p>
+    </div>
+
+    <div class="habit">
+      <div class="hhead"><span class="hname">走路</span><span class="pay" id="pay-walk"></span></div>
+      <p class="help" id="help-walk">最小版本：穿鞋出門走 5 分鐘。綁在吃完晚餐之後。</p>
+      <div class="opts c3">
+        <button type="button" class="opt neg" data-g="walk" data-v="0" aria-pressed="false">沒有</button>
+        <button type="button" class="opt" data-g="walk" data-v="1" aria-pressed="false">5 分</button>
+        <button type="button" class="opt" data-g="walk" data-v="2" aria-pressed="false">20 分以上</button>
+      </div>
+    </div>
+
+    <div class="habit">
+      <div class="hhead"><span class="hname">外食選對</span><span class="pay" id="pay-meals"></span></div>
+      <p class="help">最小版本：一餐先拿蛋白質（肉、魚、蛋、豆），再加一份菜。綁在到店選餐的時候。做到 1 餐就算。</p>
+      <div class="opts c4">
+        <button type="button" class="opt neg" data-g="meals" data-v="0" aria-pressed="false">0 餐</button>
+        <button type="button" class="opt" data-g="meals" data-v="1" aria-pressed="false">1 餐</button>
+        <button type="button" class="opt" data-g="meals" data-v="2" aria-pressed="false">2 餐</button>
+        <button type="button" class="opt" data-g="meals" data-v="3" aria-pressed="false">3 餐</button>
+      </div>
+    </div>
+
+    <div class="habit">
+      <div class="hhead"><span class="hname">無糖飲料日</span><span class="pay" id="pay-sugar"></span></div>
+      <p class="help">最小版本：點飲料時先說「無糖」。今天沒喝含糖飲料也算。</p>
+      <div class="opts c2">
+        <button type="button" class="opt neg" data-g="sugar" data-v="0" aria-pressed="false">沒做到</button>
+        <button type="button" class="opt" data-g="sugar" data-v="1" aria-pressed="false">做到</button>
+      </div>
+    </div>
+
+    <div class="habit" id="row-lower" hidden>
+      <div class="hhead"><span class="hname">下肢／核心</span><span class="pay" id="pay-lower"></span></div>
+      <p class="help">最小版本：坐站或臀橋 5 下。手腕不用出力。</p>
+      <div class="opts c2">
+        <button type="button" class="opt neg" data-g="lower" data-v="0" aria-pressed="false">沒做到</button>
+        <button type="button" class="opt" data-g="lower" data-v="1" aria-pressed="false">做到</button>
+      </div>
+    </div>
+
+    <div class="habit" id="row-noeat" hidden>
+      <div class="hhead"><span class="hname">睡前 3 小時不進食</span><span class="pay" id="pay-noeat"></span></div>
+      <p class="help">最小版本：今晚最後一餐吃完，就把廚房燈關掉。</p>
+      <div class="opts c2">
+        <button type="button" class="opt neg" data-g="noeat" data-v="0" aria-pressed="false">沒做到</button>
+        <button type="button" class="opt" data-g="noeat" data-v="1" aria-pressed="false">做到</button>
+      </div>
+    </div>
+
+    <fieldset class="adv" style="border:0;margin:0;padding:0;min-width:0">
+      <h3>進階習慣</h3>
+      <p class="help">核心三項穩了再開。一次只開一個，開了就會出現在上面。</p>
+      <div class="swrow">
+        <div class="t"><b>下肢／核心 5 下起</b><span class="help" id="sug-lower"></span></div>
+        <button type="button" class="sw" id="sw-lower" role="switch" aria-checked="false" aria-label="開啟下肢／核心"></button>
+      </div>
+      <div class="swrow">
+        <div class="t"><b>睡前 3 小時不進食</b><span class="help" id="sug-noeat"></span></div>
+        <button type="button" class="sw" id="sw-noeat" role="switch" aria-checked="false" aria-label="開啟睡前不進食"></button>
+      </div>
+    </fieldset>
+
+    <div>
+      <label class="lbl" for="win">今天為自己做了一件什麼（選填）</label>
+      <input class="winin" id="win" type="text" maxlength="80" placeholder="一句話就好">
+    </div>
+
+    <div class="total"><span>今天預計存入</span><span class="num" id="total">$0</span></div>
+
+    <div class="actions">
+      <button type="button" class="primary" id="save">存入</button>
+      <button type="button" class="ghost" id="clear" hidden>清除這天</button>
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="card soft" aria-labelledby="h-week">
+    <div>
+      <h2 id="h-week">這週的習慣</h2>
+      <p class="help" style="margin-top:6px">週一到週日。有 5 天以上做到至少一項核心，週加碼 $100。</p>
+    </div>
+    <div class="wgrid" id="wgrid"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-body">
+    <div>
+      <h2 id="h-body">身體數據</h2>
+      <p class="help" style="margin-top:6px">每週日早上空腹量體重。腰圍每月一次。InBody 每 4 到 8 週一次，選填。</p>
+    </div>
+    <div class="bform">
+      <div class="field"><label for="b-date">日期</label><input id="b-date" type="date"></div>
+      <div class="field"><label for="b-w">體重（kg）</label><input id="b-w" type="number" inputmode="decimal" step="0.1" min="30" max="200"></div>
+      <div class="field"><label for="b-waist">腰圍（cm）</label><input id="b-waist" type="number" inputmode="decimal" step="0.1" min="40" max="200"></div>
+    </div>
+    <details class="inb">
+      <summary>InBody 數字（選填）</summary>
+      <div class="bform">
+        <div class="field"><label for="b-fat">體脂率（%）</label><input id="b-fat" type="number" inputmode="decimal" step="0.1" min="3" max="70"></div>
+        <div class="field"><label for="b-musc">骨骼肌（kg）</label><input id="b-musc" type="number" inputmode="decimal" step="0.1" min="10" max="60"></div>
+        <div class="field"><label for="b-visc">內臟脂肪面積（cm²）</label><input id="b-visc" type="number" inputmode="decimal" step="0.1" min="0" max="500"></div>
+      </div>
+    </details>
+    <div class="actions">
+      <button type="button" class="primary" id="b-save">儲存數據</button>
+      <span class="status" id="b-status" role="status" aria-live="polite"></span>
+    </div>
+    <div class="tblwrap"><table id="btbl"></table></div>
+    <div>
+      <span class="lbl">體重走勢</span>
+      <div class="chartbox" id="chartbox"></div>
+    </div>
+    <div id="recentbox" hidden>
+      <span class="lbl">最近的紀錄</span>
+      <ul class="recent" id="recent"></ul>
+    </div>
+  </section>
+
+  <section class="card soft" aria-labelledby="h-shelf">
+    <div>
+      <h2 id="h-shelf">買到的東西</h2>
+      <p class="help" style="margin-top:6px">每一件都是你照顧自己換來的。</p>
+    </div>
+    <div id="shelfbox"></div>
+  </section>
+
+  <p class="foot" id="foot">載入中…</p>
+</main>
+
+<script>
+(function(){
+'use strict';
+var WD=['日','一','二','三','四','五','六'];
+var pad=function(n){return String(n).padStart(2,'0')};
+var fmt=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var parse=function(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+var addDays=function(s,n){var d=parse(s);d.setDate(d.getDate()+n);return fmt(d)};
+var diffDays=function(a,b){return Math.round((parse(b)-parse(a))/86400000)};
+var mondayOf=function(s){var d=parse(s);var k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return fmt(d)};
+var BONUS=100, BONUS_DAYS=5;
+
+function coreCount(e){return e?((e.walk>0?1:0)+(e.meals>=1?1:0)+(e.sugar===true?1:0)):0}
+function behaviorCount(e){return e?coreCount(e)+(e.lower===true?1:0)+(e.noeat===true?1:0):0}
+function isOk(e){return coreCount(e)>=1}
+
+/* Consecutive days with at least one core habit; one missed day is forgiven, two in a row end the run. */
+function streakInfo(daily,today){
+  var d=today, t=daily[today];
+  if(!isOk(t)) d=addDays(today,-1);
+  var n=0, run=0, yMiss=!isOk(daily[addDays(today,-1)]);
+  for(var i=0;i<400;i++){
+    if(isOk(daily[d])){n++;run=0}else{run++;if(run>=2)break}
+    d=addDays(d,-1);
+  }
+  return {n:n,atRisk:!isOk(t)&&yMiss&&n>0};
+}
+
+function weekInfo(daily,monday){
+  var days=[],ok=0,base=0;
+  for(var i=0;i<7;i++){
+    var date=addDays(monday,i), e=daily[date];
+    days.push({date:date,e:e});
+    if(isOk(e)) ok++;
+    if(e) base+=e.earned||0;
+  }
+  return {days:days,ok:ok,base:base,bonus:ok>=BONUS_DAYS?BONUS:0};
+}
+
+function totals(daily,ledger){
+  var earned=0, weeks={};
+  Object.keys(daily).forEach(function(k){earned+=daily[k].earned||0;weeks[mondayOf(k)]=1});
+  var bonus=0;
+  Object.keys(weeks).forEach(function(m){bonus+=weekInfo(daily,m).bonus});
+  earned+=bonus;
+  var transferred=0, spent=0;
+  Object.keys(ledger).forEach(function(k){
+    var r=ledger[k];
+    if(r.kind==='transfer') transferred+=r.amount||0;
+    else if(r.kind==='purchase') spent+=r.price||0;
+  });
+  return {earned:earned,bonus:bonus,transferred:transferred,spent:spent,balance:earned-spent,pending:Math.max(0,earned-transferred)};
+}
+
+/* Pace from the last 14 days of daily savings only (weekly bonus is extra). */
+function estimate(daily,today,remaining){
+  var keys=Object.keys(daily).sort();
+  if(!keys.length||remaining<=0) return null;
+  var first=keys[0], lim=addDays(today,-13);
+  var from=first>lim?first:lim;
+  var n=0, sum=0;
+  keys.forEach(function(k){if(k>=from&&k<=today){n++;sum+=daily[k].earned||0}});
+  if(n<3) return null;
+  var avg=sum/(diffDays(from,today)+1);
+  if(avg<=0) return null;
+  var days=Math.ceil(remaining/avg);
+  return {days:days,avg:avg,date:addDays(today,days)};
+}
+
+function bodyKeys(body,field){
+  return Object.keys(body).filter(function(k){return body[k][field]!=null}).sort();
+}
+function weightNow(body,today){
+  var ks=bodyKeys(body,'weight');
+  if(!ks.length) return null;
+  var from=addDays(today,-6);
+  var recent=ks.filter(function(k){return k>=from&&k<=today});
+  if(recent.length){
+    var s=0; recent.forEach(function(k){s+=body[k].weight});
+    return {v:s/recent.length,n:recent.length,date:recent[recent.length-1]};
+  }
+  var k=ks[ks.length-1];
+  return {v:body[k].weight,n:1,date:k,old:true};
+}
+function latestOf(body,field){
+  var ks=bodyKeys(body,field);
+  return ks.length?{v:body[ks[ks.length-1]][field],date:ks[ks.length-1]}:null;
+}
+function earliestOf(body,field){
+  var ks=bodyKeys(body,field);
+  return ks.length?{v:body[ks[0]][field],date:ks[0]}:null;
+}
+function money(n){return '$'+Math.round(n).toLocaleString('en-US')}
+function md(date){var d=parse(date);return (d.getMonth()+1)+'/'+d.getDate()}
+
+
+/* No personal numbers ship with the app: the starting point is the first entry you save. */
+var RATE0=50;
+var TODAY=fmt(new Date());
+var $=function(id){return document.getElementById(id)};
+var el=function(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+var num=function(x){return typeof x==='number'&&isFinite(x)?x:null};
+var bool=function(x){return typeof x==='boolean'?x:null};
+var clone=function(o){return JSON.parse(JSON.stringify(o))};
+
+function normDaily(v,id){return {date:id,walk:num(v.walk),meals:num(v.meals),sugar:bool(v.sugar),lower:bool(v.lower),noeat:bool(v.noeat),
+  win:typeof v.win==='string'?v.win:'',earned:num(v.earned)||0,rate:num(v.rate)||RATE0}}
+function normBody(v,id){return {date:id,weight:num(v.weight),waist:num(v.waist),fat:num(v.fat),musc:num(v.musc),visc:num(v.visc)}}
+function normLedger(v,id){return {id:id,kind:v.kind==='purchase'?'purchase':'transfer',amount:num(v.amount)||0,price:num(v.price)||0,
+  name:typeof v.name==='string'?v.name:'',date:typeof v.date==='string'?v.date:'',at:typeof v.at==='string'?v.at:''}}
+function normPrefs(v){
+  v=v||{}; var a=v.adv&&typeof v.adv==='object'?v.adv:{};
+  return {wish:typeof v.wish==='string'&&v.wish?v.wish:'我的第一個願望',wishSet:v.wishSet===true,
+    price:num(v.price)>0?v.price:3000,rate:num(v.rate)>0?v.rate:RATE0,target:num(v.target)>0?v.target:75,
+    adv:{lower:a.lower===true,noeat:a.noeat===true}};
+}
+var NORM={daily:normDaily,body:normBody,ledger:normLedger};
+
+var state={daily:{},body:{},ledger:{},prefs:normPrefs(null)};
+var mode='local', DB=null, sel=TODAY, draft=null, dirty=false, pending=null;
+var LS='lean-log-v1';
+
+function lsRead(){try{return JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){return {}}}
+function lsWrite(o){try{localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
+function mapN(m,fn){var o={};Object.keys(m||{}).forEach(function(k){if(m[k]&&typeof m[k]==='object')o[k]=fn(m[k],k)});return o}
+function loadLocal(){
+  var r=lsRead();
+  state.daily=mapN(r.daily,normDaily); state.body=mapN(r.body,normBody); state.ledger=mapN(r.ledger,normLedger);
+  state.prefs=normPrefs(r.prefs&&r.prefs.main);
+}
+function put(col,id,data){
+  if(mode==='db') return DB.collection(col).doc(id).set(data);
+  var r=lsRead(); r[col]=r[col]||{}; r[col][id]=data; lsWrite(r); loadLocal();
+  return Promise.resolve();
+}
+function del(col,id){
+  if(mode==='db') return DB.collection(col).doc(id).delete();
+  var r=lsRead(); if(r[col]) delete r[col][id]; lsWrite(r); loadLocal();
+  return Promise.resolve();
+}
+function prefsData(p){return {wish:p.wish,wishSet:p.wishSet,price:p.price,rate:p.rate,target:p.target,adv:{lower:p.adv.lower,noeat:p.adv.noeat}}}
+function savePrefs(p){state.prefs=p; return put('prefs','main',prefsData(p))}
+
+function labelFor(date){var d=parse(date);return (d.getMonth()+1)+'/'+d.getDate()+'（週'+WD[d.getDay()]+'）'}
+function setMsg(id,msg,cls){var s=$(id);s.textContent=msg||'';s.className='status'+(cls?' '+cls:'')}
+
+/* two-step confirm without confirm() */
+var armed={};
+function arm(btn,askText,run){
+  var id=btn.id, base=btn.dataset.base||btn.textContent;
+  btn.dataset.base=base;
+  if(armed[id]){clearTimeout(armed[id]);armed[id]=null;btn.textContent=base;btn.classList.remove('armed');run();return}
+  btn.textContent=askText; btn.classList.add('armed');
+  armed[id]=setTimeout(function(){armed[id]=null;btn.textContent=base;btn.classList.remove('armed')},4000);
+}
+
+/* ---------- static controls ---------- */
+var dayBtns=[];
+(function(){
+  var box=$('days');
+  for(var i=13;i>=0;i--){
+    var date=addDays(TODAY,-i), d=parse(date), b=el('button','day');
+    b.type='button'; b.dataset.date=date;
+    b.appendChild(el('span','wd',date===TODAY?'今天':WD[d.getDay()]));
+    b.appendChild(el('span','dn',String(d.getDate())));
+    var m=el('span','mark'); m.appendChild(el('i')); m.appendChild(el('i')); m.appendChild(el('i'));
+    b.appendChild(m); box.appendChild(b); dayBtns.push(b);
+  }
+  $('pick').max=TODAY;
+  $('today-label').textContent=TODAY+' · 週'+WD[parse(TODAY).getDay()];
+  $('b-date').max=TODAY; $('b-date').value=TODAY;
+})();
+
+/* ---------- derived pieces ---------- */
+function firstDate(){var k=Object.keys(state.daily).sort();return k.length?k[0]:TODAY}
+function advOn(k){return state.prefs.adv[k]===true}
+function draftBehaviors(){
+  var d=draft, n=(d.walk>0?1:0)+(d.meals>=1?1:0)+(d.sugar===true?1:0);
+  if(advOn('lower')&&d.lower===true) n++;
+  if(advOn('noeat')&&d.noeat===true) n++;
+  return n;
+}
+function walkExtra(){return Math.round(state.prefs.rate/2)}
+function draftAmount(){return draftBehaviors()*state.prefs.rate+(draft.walk===2?walkExtra():0)}
+function doneFlags(){
+  var d=draft;
+  return {walk:d.walk>0,meals:d.meals>=1,sugar:d.sugar===true,lower:advOn('lower')&&d.lower===true,noeat:advOn('noeat')&&d.noeat===true};
+}
+
+/* ---------- rendering ---------- */
+function renderReward(prevBal){
+  var p=state.prefs, T=totals(state.daily,state.ledger);
+  $('wname').textContent=p.wish;
+  $('wprice').textContent=money(p.price);
+  $('bal').textContent=money(Math.max(0,T.balance));
+  if(prevBal!=null&&T.balance>prevBal){var b=$('bal');b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}
+  var pct=Math.min(1,Math.max(0,T.balance)/p.price);
+  var fill=$('mfill'); fill.style.width=(T.balance>0?Math.max(pct*100,2):0)+'%';
+  var meter=$('meter'); [].slice.call(meter.querySelectorAll('.tick')).forEach(function(n){n.remove()});
+  [25,50,75].forEach(function(x){var t=el('i','tick');t.style.left=x+'%';meter.appendChild(t)});
+  meter.setAttribute('aria-label','願望進度 '+Math.round(pct*100)+'%');
+  var remain=Math.max(0,p.price-T.balance), est=estimate(state.daily,TODAY,remain), pace=$('pace');
+  if(remain<=0) pace.textContent='存滿了。可以買下它。';
+  else if(est) pace.textContent='還差 '+money(remain)+'。照最近 14 天的速度，約 '+est.days+' 天後（'+md(est.date)+'）。';
+  else pace.textContent='還差 '+money(remain)+'。再記幾天，這裡會算出預估日期。';
+  $('m-earn').textContent=money(T.earned);
+  $('m-xfer').textContent=money(T.transferred);
+  $('m-pend').textContent=money(T.pending);
+  var wk=weekInfo(state.daily,mondayOf(TODAY)), wl=$('weekline');
+  if(wk.bonus) wl.textContent='本週 '+wk.ok+' 天有做到，週加碼 '+money(wk.bonus)+' 已經到手。';
+  else wl.textContent='本週 '+wk.ok+' 天有做到。滿 5 天拿週加碼 '+money(BONUS)+'，還差 '+(BONUS_DAYS-wk.ok)+' 天。';
+  var fd=$('fade'), hasDays=Object.keys(state.daily).length>0;
+  fd.hidden=!hasDays;
+  if(hasDays) fd.textContent='第 8 週（'+md(addDays(firstDate(),56))+'）回來檢查一次：不給錢，這些事你還想做嗎？想的話，就把每項金額調低。';
+  var x=$('xfer'), buy=$('buy');
+  x.hidden=T.pending<=0;
+  if(!x.classList.contains('armed')){x.dataset.base='已轉入 '+money(T.pending);x.textContent=x.dataset.base}
+  $('xhelp').hidden=T.pending<=0;
+  buy.hidden=T.balance<p.price;
+  buy.textContent=buy.classList.contains('armed')?buy.textContent:'買下它';
+  if(!$('settings').hidden&&!$('settings').dataset.filled) fillSettings();
+}
+function fillSettings(){
+  var p=state.prefs;
+  $('s-wish').value=p.wishSet?p.wish:'';
+  $('s-price').value=p.price; $('s-rate').value=p.rate; $('s-target').value=p.target;
+  $('settings').dataset.filled='1';
+}
+function renderStats(){
+  var sk=streakInfo(state.daily,TODAY);
+  $('st-streak').textContent=sk.n;
+  var kn=$('keepnote');
+  kn.hidden=!sk.atRisk;
+  if(sk.atRisk) kn.textContent='昨天沒記到。今天做到一件，連續就不會斷。';
+  var core=0;
+  for(var i=0;i<7;i++) core+=coreCount(state.daily[addDays(TODAY,-i)]);
+  $('st-core').innerHTML=core+'<small>/21</small>';
+  var wn=weightNow(state.body,TODAY), target=state.prefs.target, lab=$('st-wlab');
+  if(wn){
+    $('st-weight').innerHTML=wn.v.toFixed(1)+'<small>kg</small>';
+    var st0=earliestOf(state.body,'weight'), gap=wn.v-target, lost=st0?st0.v-wn.v:0;
+    var line2=gap<=0.05?'已到目標 '+target.toFixed(1):lost>=0.05?'比起點少 '+lost.toFixed(1)+' kg':lost<=-0.05?'比起點多 '+(-lost).toFixed(1)+' kg，看 4 週走勢':'和起點差不多';
+    lab.innerHTML=(wn.n>1?'近 7 天平均':wn.old?'最新（'+md(wn.date)+'）':'本週')+'<br>'+line2;
+  }else{
+    $('st-weight').textContent='—';
+    lab.innerHTML='量第一次體重，當作起點<br>目標 '+target.toFixed(1);
+  }
+  var month=TODAY.slice(0,7), votes=0;
+  Object.keys(state.daily).forEach(function(k){if(k.slice(0,7)===month) votes+=behaviorCount(state.daily[k])});
+  $('votes').textContent=votes>0?'這個月，你已經為這個身分投了 '+votes+' 票。':'每做到一件小事，就是替這個身分投一票。';
+}
+function updateDays(){
+  dayBtns.forEach(function(b){
+    var date=b.dataset.date, e=state.daily[date], c=coreCount(e);
+    b.className='day'+(c===3?' is-full':'')+(date===TODAY?' is-today':'')+(date===sel?' is-sel':'');
+    b.setAttribute('aria-pressed',date===sel);
+    b.setAttribute('aria-label',labelFor(date)+'，'+(e?'核心習慣 '+c+' / 3':'尚未記錄'));
+    var m=b.querySelectorAll('.mark i');
+    m[0].className=e&&e.walk>0?'on':''; m[1].className=e&&e.meals>=1?'on':''; m[2].className=e&&e.sugar===true?'on':'';
+  });
+  $('pick').value=sel;
+}
+function renderWeek(){
+  var g=$('wgrid'); g.textContent='';
+  var mon=mondayOf(TODAY), rows=[['walk','走路',function(e){return e.walk>0}],['meals','外食選對',function(e){return e.meals>=1}],['sugar','無糖飲料日',function(e){return e.sugar===true}]];
+  if(advOn('lower')) rows.push(['lower','下肢／核心',function(e){return e.lower===true}]);
+  if(advOn('noeat')) rows.push(['noeat','睡前不進食',function(e){return e.noeat===true}]);
+  g.appendChild(el('span'));
+  var hd=el('div','wdays'); ['一','二','三','四','五','六','日'].forEach(function(w){hd.appendChild(el('span','wh',w))});
+  g.appendChild(hd); g.appendChild(el('span'));
+  rows.forEach(function(r){
+    g.appendChild(el('span','wl',r[1]));
+    var cells=el('div','wcells'), n=0;
+    for(var i=0;i<7;i++){
+      var date=addDays(mon,i), e=state.daily[date], on=!!(e&&r[2](e));
+      if(on) n++;
+      var c=el('span','wc'+(on?' on':'')+(date>TODAY?' fut':'')+(date===TODAY?' td':''));
+      c.setAttribute('role','img'); c.setAttribute('aria-label',labelFor(date)+(on?' 做到':date>TODAY?' 還沒到':' 沒有紀錄'));
+      cells.appendChild(c);
+    }
+    g.appendChild(cells); g.appendChild(el('span','wn',n+'/7'));
+  });
+}
+function renderShelf(){
+  var box=$('shelfbox'); box.textContent='';
+  var items=Object.keys(state.ledger).map(function(k){return state.ledger[k]}).filter(function(r){return r.kind==='purchase'})
+    .sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(a.at<b.at?1:-1)});
+  if(!items.length){box.appendChild(el('p','help','第一件還在路上。存滿願望基金後按「買下它」，它就會放在這裡。'));return}
+  var ul=el('ul','shelf');
+  items.forEach(function(r){
+    var li=el('li'); li.appendChild(el('span','sn',r.name||'（未命名）'));
+    li.appendChild(el('span','sm',md(r.date)+' · '+money(r.price)));
+    ul.appendChild(li);
+  });
+  box.appendChild(ul);
+}
+
+/* body numbers */
+var METRICS=[
+  {k:'weight',n:'體重',u:'kg',better:-1},
+  {k:'waist',n:'腰圍',u:'cm',better:-1},
+  {k:'fat',n:'體脂率',u:'%',better:-1},
+  {k:'musc',n:'骨骼肌',u:'kg',better:1},
+  {k:'visc',n:'內臟脂肪',u:'cm²',better:-1}
+];
+function renderBodyTable(){
+  var t=$('btbl'); t.textContent='';
+  var thead=el('thead'), hr=el('tr');
+  ['項目','起點','最新','變化'].forEach(function(h){hr.appendChild(el('th',null,h))});
+  thead.appendChild(hr); t.appendChild(thead);
+  var tb=el('tbody');
+  METRICS.forEach(function(m){
+    var base=earliestOf(state.body,m.k);
+    var last=latestOf(state.body,m.k);
+    var tr=el('tr');
+    tr.appendChild(el('td',null,m.n+'（'+m.u+'）'));
+    tr.appendChild(el('td',null,base?base.v.toFixed(1):'—'));
+    tr.appendChild(el('td',null,last?last.v.toFixed(1):'—'));
+    var ch='—', cls='';
+    if(base&&last&&last.date!==base.date){
+      var d=last.v-base.v; ch=(d>0?'+':d<0?'−':'')+Math.abs(d).toFixed(1);
+      if(Math.abs(d)>=0.05&&d*m.better>0) cls='good';
+    }
+    tr.appendChild(el('td',cls,ch));
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+}
+function renderChart(){
+  var box=$('chartbox'); box.textContent='';
+  var pts=[];
+  var ks=bodyKeys(state.body,'weight');
+  ks.forEach(function(k){pts.push({date:k,v:state.body[k].weight})});
+  pts.sort(function(a,b){return a.date<b.date?-1:1});
+  if(pts.length<2){box.appendChild(el('p','help','量兩次以上體重，這裡會畫出走勢。'));return}
+  var W=Math.max(280,box.clientWidth||340), H=190, L=36, R=54, Tp=16, B=26;
+  var target=state.prefs.target, vals=pts.map(function(p){return p.v}).concat([target]);
+  var lo=Math.floor(Math.min.apply(null,vals)-0.5), hi=Math.ceil(Math.max.apply(null,vals)+0.5);
+  if(hi-lo<3) hi=lo+3;
+  var t0=parse(pts[0].date).getTime(), t1=parse(pts[pts.length-1].date).getTime();
+  var X=function(date){return L+(t1===t0?0:(parse(date).getTime()-t0)/(t1-t0))*(W-L-R)};
+  var Y=function(v){return Tp+(1-(v-lo)/(hi-lo))*(H-Tp-B)};
+  var ns='http://www.w3.org/2000/svg';
+  var svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 '+W+' '+H); svg.setAttribute('role','img');
+  svg.setAttribute('aria-label','體重走勢，從 '+pts[0].v.toFixed(1)+' kg 到 '+pts[pts.length-1].v.toFixed(1)+' kg，目標 '+target.toFixed(1)+' kg');
+  function add(tag,attrs,text){
+    var n=document.createElementNS(ns,tag);
+    Object.keys(attrs).forEach(function(a){
+      var v=attrs[a];
+      if((a==='fill'||a==='stroke')&&typeof v==='string'&&v.indexOf('var(')===0) n.style.setProperty(a,v);
+      else n.setAttribute(a,v);
+    });
+    if(text!=null) n.textContent=text;
+    svg.appendChild(n); return n;
+  }
+  var ticks=[lo,lo+(hi-lo)/2,hi];
+  ticks.forEach(function(v){
+    add('line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),'class':'cgrid'});
+    add('text',{x:L-6,y:Y(v)+4,'text-anchor':'end','class':'ctx'},v%1===0?String(v):v.toFixed(1));
+  });
+  add('line',{x1:L,x2:W-R,y1:Y(target),y2:Y(target),stroke:'var(--coin)','stroke-width':1.5,'stroke-dasharray':'5 4'});
+  add('text',{x:W-R+6,y:Y(target)+4,'class':'ctx',fill:'var(--coin-ink)',style:'fill:var(--coin-ink)'},'目標 '+target.toFixed(1));
+  add('text',{x:X(pts[0].date),y:H-6,'text-anchor':'start','class':'ctx'},md(pts[0].date));
+  add('text',{x:X(pts[pts.length-1].date),y:H-6,'text-anchor':'end','class':'ctx'},md(pts[pts.length-1].date));
+  add('polyline',{points:pts.map(function(p){return X(p.date).toFixed(1)+','+Y(p.v).toFixed(1)}).join(' '),fill:'none',stroke:'var(--done)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'});
+  var tip=el('div','ctip'); tip.hidden=true;
+  pts.forEach(function(p,i){
+    var last=i===pts.length-1;
+    add('circle',{cx:X(p.date),cy:Y(p.v),r:last?5:4,fill:'var(--done)',stroke:'var(--surface)','stroke-width':2});
+    if(i===0||last){
+      var tx=add('text',{x:X(p.date),y:Y(p.v)-10,'text-anchor':i===0?'start':'end','class':'ctx strong'},p.v.toFixed(1));
+    }
+    var hit=add('circle',{cx:X(p.date),cy:Y(p.v),r:16,fill:'transparent'});
+    hit.addEventListener('pointerenter',function(){tip.textContent=md(p.date)+'　'+p.v.toFixed(1)+' kg';tip.style.left=(X(p.date)/W*100)+'%';tip.style.top=(Y(p.v)/H*100)+'%';tip.hidden=false});
+    hit.addEventListener('pointerleave',function(){tip.hidden=true});
+  });
+  box.appendChild(svg); box.appendChild(tip);
+}
+function renderRecent(){
+  var ks=Object.keys(state.body).sort().reverse().slice(0,5), ul=$('recent');
+  ul.textContent=''; $('recentbox').hidden=!ks.length;
+  ks.forEach(function(k){
+    var e=state.body[k], parts=[];
+    if(e.weight!=null) parts.push('體重 '+e.weight.toFixed(1));
+    if(e.waist!=null) parts.push('腰圍 '+e.waist.toFixed(1));
+    if(e.fat!=null) parts.push('體脂 '+e.fat.toFixed(1)+'%');
+    if(e.musc!=null) parts.push('肌 '+e.musc.toFixed(1));
+    if(e.visc!=null) parts.push('內臟 '+e.visc.toFixed(1));
+    var li=el('li'); li.appendChild(el('span',null,md(k)+'　'+(parts.join('　')||'（空）')));
+    var b=el('button','ghost','刪除'); b.type='button'; b.id='rdel-'+k; b.dataset.date=k; b.setAttribute('aria-label','刪除 '+md(k)+' 的紀錄');
+    li.appendChild(b); ul.appendChild(li);
+  });
+}
+function loadBodyForm(date){
+  var e=state.body[date]||{};
+  $('b-w').value=e.weight!=null?e.weight:''; $('b-waist').value=e.waist!=null?e.waist:'';
+  $('b-fat').value=e.fat!=null?e.fat:''; $('b-musc').value=e.musc!=null?e.musc:''; $('b-visc').value=e.visc!=null?e.visc:'';
+}
+function setFoot(){
+  $('foot').textContent=mode==='db'?'資料存在你的帳號，只有這個頁面的擁有者讀得到。':'資料只存在這支手機的 App 裡。記得定期到「備份」分頁匯出一份。';
+}
+
+/* ---------- check-in form ---------- */
+function blankDay(date){return {date:date,walk:null,meals:null,sugar:null,lower:null,noeat:null,win:''}}
+function isEmpty(d){return d.walk===null&&d.meals===null&&d.sugar===null&&d.lower===null&&d.noeat===null&&!d.win.trim()}
+function syncForm(){
+  var btns=document.querySelectorAll('#entry [data-g]');
+  for(var i=0;i<btns.length;i++){
+    var b=btns[i], g=b.dataset.g, v=b.dataset.v, val=draft[g], on=false;
+    if(val!==null&&val!==undefined) on=(typeof val==='boolean'?String(val?1:0):String(val))===v;
+    b.setAttribute('aria-pressed',on);
+  }
+  $('row-lower').hidden=!advOn('lower'); $('row-noeat').hidden=!advOn('noeat');
+  ['lower','noeat'].forEach(function(k){
+    var sw=$('sw-'+k); sw.setAttribute('aria-checked',advOn(k));
+    var due=addDays(firstDate(),k==='lower'?14:28);
+    $('sug-'+k).textContent=TODAY>=due?'建議時間已到（'+md(due)+' 起）':'建議從 '+md(due)+' 起';
+  });
+  var f=doneFlags(), rate=state.prefs.rate, ids=['walk','meals','sugar','lower','noeat'];
+  ids.forEach(function(k){var p=$('pay-'+k);p.className='pay'+(f[k]?' on':'');p.textContent=(f[k]?'+':'')+money(k==='walk'&&draft.walk===2?rate+walkExtra():rate)});
+  $('help-walk').textContent='最小版本：穿鞋出門走 5 分鐘。綁在吃完晚餐之後。走 20 分鐘以上，多存 '+money(walkExtra())+'。';
+  $('total').textContent=money(draftAmount());
+}
+function updateTitle(){
+  $('entry-title').textContent=labelFor(sel);
+  $('entry-tag').textContent=sel===TODAY?(state.daily[sel]?'今天 · 已記錄':'今天'):(state.daily[sel]?'已記錄':'補記');
+  $('clear').hidden=!state.daily[sel];
+}
+function loadDraft(date,keepMsg){
+  var e=state.daily[date];
+  draft=e?clone(e):blankDay(date);
+  $('win').value=draft.win; dirty=false; pending=null;
+  syncForm(); updateTitle(); if(!keepMsg) setMsg('status','');
+}
+function markDirty(){dirty=true;pending=null;syncForm();setMsg('status','有未儲存的變更','warn')}
+function renderAll(prevBal){
+  renderReward(prevBal); renderStats(); updateDays(); renderWeek(); renderBodyTable(); renderChart(); renderRecent(); renderShelf();
+  if(!dirty) loadDraft(sel,true); else {syncForm();updateTitle()}
+}
+function selectDate(date){
+  if(!date||date===sel||date>TODAY){updateDays();return}
+  if(dirty&&pending!==date){pending=date;setMsg('status','這天還沒儲存。再選一次該日期，會放棄這些變更。','warn');return}
+  sel=date; loadDraft(date); updateDays();
+}
+
+/* ---------- interactions ---------- */
+$('entry').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-g]'); if(!b) return;
+  var g=b.dataset.g, v=b.dataset.v, x=(g==='walk'||g==='meals')?Number(v):v==='1';
+  draft[g]=draft[g]===x?null:x;
+  markDirty();
+});
+$('win').addEventListener('input',function(){draft.win=$('win').value;dirty=true;pending=null;setMsg('status','有未儲存的變更','warn')});
+$('days').addEventListener('click',function(e){var b=e.target.closest('.day');if(b) selectDate(b.dataset.date)});
+$('pick').addEventListener('change',function(){selectDate($('pick').value)});
+
+['lower','noeat'].forEach(function(k){
+  $('sw-'+k).addEventListener('click',function(){
+    var p=clone(state.prefs); p.adv[k]=!p.adv[k];
+    savePrefs(p).then(function(){renderAll()}).catch(function(){setMsg('status','設定沒存成功，稍後再試一次。','warn')});
+    if(mode==='db'){state.prefs=p;renderAll()}
+  });
+});
+
+$('save').addEventListener('click',async function(){
+  if(isEmpty(draft)){setMsg('status','先填一項再存入。','warn');return}
+  var btn=$('save'); btn.disabled=true; setMsg('status','儲存中…');
+  var p=state.prefs, n=draftBehaviors();
+  var data={date:sel,walk:draft.walk,meals:draft.meals,sugar:draft.sugar,
+    lower:advOn('lower')?draft.lower:null,noeat:advOn('noeat')?draft.noeat:null,
+    win:draft.win.trim().slice(0,80),earned:draftAmount(),rate:p.rate,updatedAt:new Date().toISOString()};
+  var prevBal=totals(state.daily,state.ledger).balance;
+  try{
+    await put('daily',sel,data);
+    var hyp=Object.assign({},state.daily); hyp[sel]=normDaily(data,sel);
+    var T=totals(hyp,state.ledger);
+    dirty=false;
+    if(mode==='db') state.daily[sel]=normDaily(data,sel);
+    renderAll(prevBal);
+    setMsg('status',data.earned>0?'已存入 '+money(data.earned)+'。願望基金現在是 '+money(T.balance)+'。':'已記錄。明天再來一次，只要不連漏兩天就好。',data.earned>0?'ok':'');
+  }catch(err){
+    var c=err&&err.code;
+    setMsg('status',c==='quota_exceeded'?'資料量已滿，無法再新增。':'儲存失敗，稍後再試一次。','warn');
+  }finally{btn.disabled=false}
+});
+$('clear').addEventListener('click',function(){
+  arm($('clear'),'再按一次確認清除',function(){
+    del('daily',sel).then(function(){
+      delete state.daily[sel]; dirty=false; renderAll(); setMsg('status','已清除');
+    }).catch(function(){setMsg('status','清除失敗，稍後再試一次。','warn')});
+  });
+});
+
+$('set-toggle').addEventListener('click',function(){
+  var s=$('settings'), open=s.hidden;
+  s.hidden=!open; $('set-toggle').setAttribute('aria-expanded',open); $('set-toggle').textContent=open?'收起':'設定';
+  if(open){delete s.dataset.filled;fillSettings()}
+});
+$('s-save').addEventListener('click',function(){
+  var name=$('s-wish').value.trim().slice(0,40), price=parseFloat($('s-price').value), rate=parseFloat($('s-rate').value), target=parseFloat($('s-target').value);
+  if(!(price>=50&&price<=1000000)||!(rate>=5&&rate<=1000)||!(target>=35&&target<=150)){setMsg('s-status','請檢查數字：價格、每項金額、目標體重。','warn');return}
+  var p=clone(state.prefs);
+  if(name){p.wish=name;p.wishSet=true}
+  p.price=price; p.rate=rate; p.target=target;
+  savePrefs(p).then(function(){
+    if(mode==='db') state.prefs=p;
+    setMsg('s-status','已儲存','ok'); renderAll();
+  }).catch(function(){setMsg('s-status','儲存失敗，稍後再試一次。','warn')});
+});
+
+$('xfer').addEventListener('click',function(){
+  var T=totals(state.daily,state.ledger); if(T.pending<=0) return;
+  arm($('xfer'),'再按一次確認已轉入',function(){
+    var id='t-'+Date.now();
+    put('ledger',id,{kind:'transfer',amount:T.pending,date:TODAY,at:new Date().toISOString()}).then(function(){
+      if(mode==='db') state.ledger[id]=normLedger({kind:'transfer',amount:T.pending,date:TODAY,at:new Date().toISOString()},id);
+      renderAll();
+    });
+  });
+});
+$('buy').addEventListener('click',function(){
+  var p=state.prefs, T=totals(state.daily,state.ledger); if(T.balance<p.price) return;
+  arm($('buy'),'再按一次確認買下',function(){
+    var id='b-'+Date.now(), rec={kind:'purchase',name:p.wish,price:p.price,date:TODAY,at:new Date().toISOString()};
+    var np=clone(p); np.wish='下一個願望'; np.wishSet=false;
+    Promise.all([put('ledger',id,rec),savePrefs(np)]).then(function(){
+      if(mode==='db'){state.ledger[id]=normLedger(rec,id);state.prefs=np}
+      delete $('settings').dataset.filled;
+      renderAll();
+    });
+  });
+});
+
+function numVal(id,lo,hi){
+  var s=$(id).value.trim(); if(!s) return {v:null};
+  var v=parseFloat(s.replace(',','.'));
+  if(!isFinite(v)||v<lo||v>hi) return {bad:true};
+  return {v:v};
+}
+$('b-date').addEventListener('change',function(){var d=$('b-date').value;if(d&&d<=TODAY){loadBodyForm(d);setMsg('b-status','')}});
+$('b-save').addEventListener('click',function(){
+  var date=$('b-date').value||TODAY; if(date>TODAY) date=TODAY;
+  var f={weight:numVal('b-w',30,200),waist:numVal('b-waist',40,200),fat:numVal('b-fat',3,70),musc:numVal('b-musc',10,60),visc:numVal('b-visc',0,500)};
+  var bad=Object.keys(f).some(function(k){return f[k].bad});
+  if(bad){setMsg('b-status','有數字不在合理範圍，請檢查。','warn');return}
+  var any=Object.keys(f).some(function(k){return f[k].v!==null});
+  if(!any){setMsg('b-status','先填一項再儲存。','warn');return}
+  var data={date:date,updatedAt:new Date().toISOString()};
+  Object.keys(f).forEach(function(k){data[k]=f[k].v});
+  var pk=bodyKeys(state.body,'weight').filter(function(k){return k<date}), prevW=pk.length?state.body[pk[pk.length-1]].weight:null;
+  put('body',date,data).then(function(){
+    if(mode==='db') state.body[date]=normBody(data,date);
+    var msg='已儲存 '+md(date)+' 的數據';
+    if(data.weight!=null&&prevW!=null&&data.weight>prevW+0.05) msg+='。體重上下 1 kg 很正常，看 4 週的走勢，不看單次。';
+    renderAll(); setMsg('b-status',msg,'ok');
+  }).catch(function(err){setMsg('b-status',(err&&err.code==='quota_exceeded')?'資料量已滿，無法再新增。':'儲存失敗，稍後再試一次。','warn')});
+});
+$('recent').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-date]'); if(!b) return;
+  var date=b.dataset.date;
+  arm(b,'再按一次確認',function(){
+    del('body',date).then(function(){delete state.body[date];renderAll()}).catch(function(){setMsg('b-status','刪除失敗，稍後再試一次。','warn')});
+  });
+});
+var rt=null;
+window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(renderChart,150)});
+
+/* ---------- storage ---------- */
+function onErr(){ $('foot').textContent='資料暫時讀不到，請稍後重新整理。' }
+async function init(){
+  loadDraft(sel); renderAll(); loadBodyForm(TODAY);
+  try{
+    if(window.claude&&window.claude.use){
+      var r=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+      var user=r[1], owner=user?await user.isOwner():false;
+      if(r[0]&&owner) DB=r[0];
+    }
+  }catch(e){DB=null}
+  if(DB){
+    mode='db'; setFoot();
+    var timer=setTimeout(function(){$('foot').textContent='連線較慢，資料可能還沒載入完。'},10000);
+    var first=true;
+    ['daily','body','ledger'].forEach(function(name){
+      DB.collection(name).onSnapshot(function(snap){
+        if(!snap.metadata.fromCache){clearTimeout(timer);setFoot()}
+        var m={}; snap.docs.forEach(function(d){var v=d.data();if(v) m[d.id]=NORM[name](v,d.id)});
+        state[name]=m; renderAll();
+        if(name==='body'&&first){first=false;loadBodyForm($('b-date').value||TODAY)}
+      },onErr);
+    });
+    DB.collection('prefs').doc('main').onSnapshot(function(s){
+      state.prefs=normPrefs(s.exists?s.data():null); renderAll();
+    },onErr);
+  }else{
+    mode='local'; setFoot(); loadLocal(); renderAll(); loadBodyForm(TODAY);
+  }
+}
+init();
+})();
+</script>
+
+</body></html>

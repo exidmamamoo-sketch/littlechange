@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>輕盈日常</title>
+<meta name="theme-color" content="#F2F6F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1A1D" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="輕盈日常">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root{
+  /* Layout: the two pages fill the screen above a three-tab bar; backup is a native panel in the same shell. */
+  --bg:#F2F6F5; --surface:#FFFFFF; --ink:#13262B; --muted:#566A6F; --line:#D3DFDD;
+  --done:#1E7F72; --done-soft:#DDEFEB; --on-done:#FFFFFF;
+  --coin:#A5631A; --coin-soft:#F6E7CF; --coin-ink:#7A4710; --on-coin:#FFFFFF;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-num:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0E1A1D; --surface:#15262A; --ink:#E4EFEC; --muted:#93A9AD; --line:#27393D;
+    --done:#5CC4B2; --done-soft:#1B3A37; --on-done:#0B1A18;
+    --coin:#E3A653; --coin-soft:#3B2E1A; --coin-ink:#F0BE78; --on-coin:#1A1206;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:15px; line-height:1.65;
+  display:flex; flex-direction:column; overscroll-behavior:none; -webkit-text-size-adjust:100%;
+  padding-top:env(safe-area-inset-top,0px);
+}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--done);outline-offset:2px}
+.panes{flex:1 1 auto;min-height:0;position:relative}
+.panes iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+.panel{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;
+  padding:28px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.bwrap{max-width:680px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
+.eyebrow{margin:0 0 6px;font:500 12px/1 var(--f-mono);letter-spacing:.14em;color:var(--muted)}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:.03em}
+h2{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:.02em}
+.lede{margin:8px 0 0;color:var(--muted);max-width:34em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.help{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.line{margin:0;font-size:15px}
+.line.warn{color:var(--coin-ink);font-weight:700}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.primary,.coinbtn{min-height:46px;padding:0 22px;border-radius:8px;font-weight:700;letter-spacing:.04em;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.primary{border:0;background:var(--done);color:var(--on-done)}
+.coinbtn{border:1px solid var(--done);background:var(--surface);color:var(--done)}
+.lbl{font-size:14px;font-weight:700}
+textarea{width:100%;min-height:96px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.5;resize:vertical}
+.sr{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.status{margin:0;font-size:13.5px;color:var(--muted);min-height:1.4em}
+.status.ok{color:var(--done);font-weight:700}
+.status.warn{color:var(--coin-ink);font-weight:700}
+.foot{margin:0;font-size:12.5px;color:var(--muted)}
+.tabs{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);
+  padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.tab{min-height:58px;border:0;background:none;color:var(--muted);font-size:12.5px;font-weight:500;letter-spacing:.04em;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-selected="true"]{color:var(--done);font-weight:700}
+@media (max-width:420px){h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="panes">
+  <iframe id="f-daily" src="daily.html" title="輕盈日常"></iframe>
+  <iframe id="f-sober" src="sober.html" title="戒酒輕盈紀錄" hidden></iframe>
+  <section class="panel" id="p-backup" role="tabpanel" aria-labelledby="t-backup" hidden>
+    <div class="bwrap">
+      <header>
+        <p class="eyebrow">備份與還原</p>
+        <h1>你的資料</h1>
+        <p class="lede">所有紀錄只存在這支手機的 App 裡，沒有傳到任何伺服器。換手機、重裝或清除資料之前，請先匯出備份。</p>
+      </header>
+
+      <div class="card">
+        <h2>備份狀態</h2>
+        <p class="line" id="b-state"></p>
+        <p class="help" id="b-count"></p>
+      </div>
+
+      <div class="card">
+        <h2>匯出</h2>
+        <p class="help">備份檔含你的健康紀錄。請存在自己的雲端硬碟或傳給自己，不要公開分享。</p>
+        <div class="btns">
+          <button type="button" class="primary" id="b-export">匯出備份檔</button>
+          <button type="button" class="coinbtn" id="b-copy">複製備份文字</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>匯入</h2>
+        <p class="help">匯入不會刪掉手機上的紀錄。同一天有兩份時，保留比較新的那份。</p>
+        <div class="btns">
+          <label class="primary" for="b-file">選擇備份檔</label>
+          <input id="b-file" class="sr" type="file" accept=".json,application/json">
+        </div>
+        <label class="lbl" for="b-paste">或貼上備份文字</label>
+        <textarea id="b-paste" placeholder="貼上複製的備份文字"></textarea>
+        <div class="btns"><button type="button" class="coinbtn" id="b-restore">用貼上的文字還原</button></div>
+      </div>
+
+      <p class="status" id="b-msg" role="status" aria-live="polite"></p>
+      <p class="foot">輕盈日常 App · v1</p>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="主要分頁">
+  <button type="button" class="tab" id="t-daily" role="tab" aria-selected="true" data-tab="daily">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>輕盈日常</button>
+  <button type="button" class="tab" id="t-sober" role="tab" aria-selected="false" data-tab="sober">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.5 4.2 6 7.2 6 10.3a6 6 0 0 1-12 0C6 10.2 8.5 7.2 12 3z"/></svg>戒酒紀錄</button>
+  <button type="button" class="tab" id="t-backup" role="tab" aria-selected="false" data-tab="backup">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 11l4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg>備份</button>
+</nav>
+
+<script src="backup-core.js"></script>
+<script>
+(function(){
+'use strict';
+var KEY_TAB='qingying-tab', KEY_BK='qingying-last-backup';
+var NAMES=['daily','sober','backup'];
+var $=function(id){return document.getElementById(id)};
+var pad=function(n){return String(n).padStart(2,'0')};
+var fmt=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var dayAtLoad=fmt(new Date());
+
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function readData(){return BackupCore.fromStorage(lsGet)}
+function msg(text,cls){var m=$('b-msg');m.textContent=text||'';m.className='status'+(cls?' '+cls:'')}
+
+function show(name){
+  if(NAMES.indexOf(name)<0) name='daily';
+  $('f-daily').hidden=name!=='daily';
+  $('f-sober').hidden=name!=='sober';
+  $('p-backup').hidden=name!=='backup';
+  NAMES.forEach(function(n){$('t-'+n).setAttribute('aria-selected',n===name)});
+  lsSet(KEY_TAB,name);
+  if(name==='backup') renderBackup();
+}
+document.querySelector('.tabs').addEventListener('click',function(e){
+  var b=e.target.closest('.tab'); if(b) show(b.dataset.tab);
+});
+
+function renderBackup(){
+  var s=BackupCore.summary(readData());
+  $('b-count').textContent='目前有：戒酒紀錄 '+s.sober+' 天、輕盈日常 '+s.daily+' 天、身體數據 '+s.body+' 筆、帳目 '+s.ledger+' 筆。';
+  var st=$('b-state'), last=lsGet(KEY_BK), t=last?new Date(last):null;
+  if(!t||isNaN(t.getTime())){st.textContent='還沒備份過。建議現在先匯出一份。';st.className='line warn';return}
+  var days=Math.floor((Date.now()-t.getTime())/86400000);
+  st.textContent=(days<=0?'今天已備份。':'上次備份是 '+days+' 天前（'+(t.getMonth()+1)+'/'+t.getDate()+'）。')+(days>=7?'建議再備份一次。':'');
+  st.className='line'+(days>=7?' warn':'');
+}
+function markBackup(){lsSet(KEY_BK,new Date().toISOString());renderBackup()}
+function payloadText(){return JSON.stringify(BackupCore.build(readData()),null,1)}
+function reloadPages(){
+  ['f-daily','f-sober'].forEach(function(id){
+    var f=$(id); try{f.contentWindow.location.reload()}catch(e){f.src=f.src}
+  });
+}
+
+$('b-export').addEventListener('click',async function(){
+  var text=payloadText(), name='qingying-backup-'+fmt(new Date())+'.json';
+  try{
+    var file=new File([text],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({files:[file],title:'輕盈日常備份'});
+        markBackup(); msg('已交給分享選單。請存到「檔案」或雲端硬碟。','ok'); return;
+      }catch(e){
+        if(e&&e.name==='AbortError'){msg('已取消，沒有備份。','warn');return}
+      }
+    }
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+    a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
+    markBackup(); msg('已下載備份檔。請確認它出現在「下載」或「檔案」裡。','ok');
+  }catch(e){msg('匯出失敗。可以改用「複製備份文字」，貼到備忘錄保存。','warn')}
+});
+$('b-copy').addEventListener('click',function(){
+  var text=payloadText();
+  function fallback(){
+    var ta=$('b-paste'); ta.value=text; ta.focus(); ta.select();
+    msg('瀏覽器不讓我直接複製。備份文字已放進下方的框，請全選複製，貼到備忘錄保存。','warn');
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){markBackup();msg('已複製。請貼到備忘錄或傳給自己保存。','ok')},fallback);
+  }else fallback();
+});
+
+function doImport(text){
+  var p=BackupCore.parse(text);
+  if(!p.ok){msg(p.error,'warn');return}
+  var m=BackupCore.merge(readData(),p.data), st=m.stats;
+  var prev=[lsGet(BackupCore.KEY_SOBER),lsGet(BackupCore.KEY_LEAN)];
+  try{
+    BackupCore.toStorage(function(k,v){localStorage.setItem(k,v)},m.data);
+  }catch(e){
+    try{
+      if(prev[0]!==null) localStorage.setItem(BackupCore.KEY_SOBER,prev[0]);
+      if(prev[1]!==null) localStorage.setItem(BackupCore.KEY_LEAN,prev[1]);
+    }catch(e2){}
+    msg('儲存空間不足，或被瀏覽器擋住，沒有匯入。','warn'); return;
+  }
+  reloadPages(); renderBackup();
+  msg('已匯入：新增 '+st.added+' 筆、更新 '+st.updated+' 筆、保留較新的 '+st.kept+' 筆'+(st.skipped?'，略過 '+st.skipped+' 筆格式不對的資料':'')+'。','ok');
+}
+$('b-file').addEventListener('change',function(){
+  var input=this, f=input.files&&input.files[0]; if(!f) return;
+  if(f.size>5000000){msg('這個檔案太大，不像是備份檔。','warn');input.value='';return}
+  var r=new FileReader();
+  r.onload=function(){doImport(String(r.result));input.value=''};
+  r.onerror=function(){msg('讀取檔案失敗，請再選一次。','warn');input.value=''};
+  r.readAsText(f);
+});
+$('b-restore').addEventListener('click',function(){doImport($('b-paste').value)});
+
+/* A day-based app must not stay on yesterday after being left open overnight. */
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden) return;
+  var now=fmt(new Date());
+  if(now!==dayAtLoad){dayAtLoad=now;reloadPages()}
+});
+
+try{if(navigator.storage&&navigator.storage.persist) navigator.storage.persist()}catch(e){}
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+}
+show(lsGet(KEY_TAB)||'daily');
+})();
+</script>
+</body>
+</html>

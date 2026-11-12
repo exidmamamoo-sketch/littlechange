@@ -1,0 +1,573 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>戒酒輕盈紀錄</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root{
+  /* Layout: one calm column. Totals row, 14-day strip, the day's entry card, then the morning comparison. */
+  --bg:#F2F6F5; --surface:#FFFFFF; --ink:#13262B; --muted:#566A6F; --line:#D3DFDD;
+  --dry:#1E7F72; --dry-soft:#DDEFEB; --on-dry:#FFFFFF;
+  --drink:#A5631A; --drink-soft:#F6E7CF; --on-drink:#FFFFFF;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-num:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A1D; --surface:#15262A; --ink:#E4EFEC; --muted:#93A9AD; --line:#27393D;
+    --dry:#5CC4B2; --dry-soft:#1B3A37; --on-dry:#0B1A18;
+    --drink:#E3A653; --drink-soft:#3B2E1A; --on-drink:#1A1206;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A1D; --surface:#15262A; --ink:#E4EFEC; --muted:#93A9AD; --line:#27393D;
+  --dry:#5CC4B2; --dry-soft:#1B3A37; --on-dry:#0B1A18;
+  --drink:#E3A653; --drink-soft:#3B2E1A; --on-drink:#1A1206;
+  color-scheme:dark;
+}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-size:15px; line-height:1.65;
+  padding-block:28px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+*{box-sizing:border-box}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--dry);outline-offset:2px}
+.wrap{max-width:680px;margin-inline:auto;display:flex;flex-direction:column;gap:30px}
+
+/* header */
+.eyebrow{margin:0 0 6px;font:500 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{margin:0;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:.03em;text-wrap:balance}
+.lede{margin:8px 0 0;color:var(--muted);max-width:34em}
+h2{margin:0;font-size:17px;line-height:1.35;font-weight:700;letter-spacing:.02em;text-wrap:balance}
+
+/* totals */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.stats>div{display:flex;flex-direction:column;gap:6px;padding:2px 14px;border-left:1px solid var(--line)}
+.stats>div:first-child{padding-left:0;border-left:0}
+.num{font-family:var(--f-num);font-weight:600;font-size:42px;line-height:1;font-variant-numeric:tabular-nums}
+.num small{font-size:17px;color:var(--muted);font-weight:500;margin-left:2px}
+.lab{font-size:12px;line-height:1.4;color:var(--muted)}
+
+/* day strip */
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin-bottom:12px}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:2px;background:var(--line)}
+.legend .l-dry{background:var(--dry)}
+.legend .l-drink{background:var(--drink)}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 9px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;min-width:0}
+.day .wd{font-size:11px;line-height:1.2;color:var(--muted)}
+.day .dn{font-family:var(--f-num);font-size:19px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.day .mark{width:58%;height:4px;border-radius:2px;background:var(--line)}
+.day.is-dry{background:var(--dry-soft)}
+.day.is-dry .mark{background:var(--dry)}
+.day.is-drink{background:var(--drink-soft)}
+.day.is-drink .mark{background:var(--drink)}
+.day.is-part .mark{background:var(--muted)}
+.day.is-today .wd{color:var(--ink);font-weight:700}
+.day.is-sel{outline:2px solid var(--ink);outline-offset:1px}
+.pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px;font-size:13px;color:var(--muted)}
+.pick input{min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+
+/* entry card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 20px;display:flex;flex-direction:column;gap:24px}
+.ehead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.etag{font:500 11px/1 var(--f-mono);letter-spacing:.1em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 8px}
+.etag:empty{display:none}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend,.lbl{display:block;padding:0;margin:0 0 9px;font-size:14px;font-weight:700;letter-spacing:.02em}
+.help{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt,.chip,.scale button,.rbtns button,.step button{border:1px solid var(--line);background:var(--surface);cursor:pointer;min-height:42px}
+@media (prefers-reduced-motion:no-preference){
+  .opt,.chip,.scale button,.rbtns button,.step button,.day{transition:background-color .12s,border-color .12s,color .12s}
+}
+.opt{border-radius:8px;font-weight:500}
+.opt-dry[aria-pressed="true"]{background:var(--dry);border-color:var(--dry);color:var(--on-dry)}
+.opt-drink[aria-pressed="true"]{background:var(--drink);border-color:var(--drink);color:var(--on-drink)}
+#drinkbox{display:flex;flex-direction:column;gap:22px}
+.step{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}
+.step button{width:42px;border-radius:8px;font-size:20px;line-height:1;padding:0}
+.step output{min-width:2ch;text-align:center;font-family:var(--f-num);font-weight:600;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.step .help{flex-basis:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border-radius:999px;padding:0 15px;min-height:38px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.scale{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.scale button{border-radius:8px;padding:0;font-family:var(--f-num);font-weight:600;font-size:17px}
+.scale button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.ends{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--muted)}
+.rrow{display:grid;grid-template-columns:5.2em minmax(0,1fr);align-items:center;gap:10px}
+.rrow+.rrow{margin-top:8px}
+.rlab{font-size:14px}
+.rbtns{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.rbtns button{border-radius:8px;padding:0;font-family:var(--f-num);font-weight:600;font-size:16px}
+.rbtns button[aria-pressed="true"]{background:var(--dry);border-color:var(--dry);color:var(--on-dry)}
+textarea{width:100%;min-height:92px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical;line-height:1.6}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.primary{min-height:46px;padding:0 28px;border:0;border-radius:8px;background:var(--dry);color:var(--on-dry);font-weight:700;letter-spacing:.06em;cursor:pointer}
+.primary:disabled{opacity:.55;cursor:default}
+.ghost{min-height:40px;padding:0 12px;border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ghost.armed{color:var(--drink);font-weight:700}
+.status{font-size:13px;color:var(--muted);min-height:1.4em}
+.status.warn{color:var(--drink)}
+
+/* comparison */
+.soft{background:transparent;border-style:dashed}
+.sub{margin:6px 0 0;color:var(--muted);font-size:13.5px}
+#cmp{display:flex;flex-direction:column;gap:16px}
+.mrow{display:flex;flex-direction:column;gap:5px}
+.mlab{font-size:14px;font-weight:700}
+.bline{display:grid;grid-template-columns:5.2em minmax(0,1fr);align-items:center;gap:10px}
+.bname{font-size:12px;color:var(--muted)}
+.track{height:22px;border-radius:5px;background:var(--line);overflow:hidden;display:flex;align-items:center}
+.fill{height:100%;min-width:38px;display:flex;align-items:center;padding-left:8px;font:500 12px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.fill.dry{background:var(--dry);color:var(--on-dry)}
+.fill.drink{background:var(--drink);color:var(--on-drink)}
+.na{padding-left:8px;font-size:12px;color:var(--muted)}
+.hint{margin:0;color:var(--muted)}
+.cnote{margin:0;font-size:12.5px;color:var(--muted);line-height:1.55}
+.tagsec{display:flex;flex-direction:column;gap:9px;padding-top:18px;margin-top:2px;border-top:1px solid var(--line)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{display:inline-flex;align-items:baseline;gap:6px;padding:4px 11px;border:1px solid var(--line);border-radius:999px;font-size:13px}
+.tag b{font:500 12px var(--f-mono);color:var(--muted)}
+
+.foot{margin:0;font-size:12.5px;color:var(--muted)}
+
+@media (max-width:420px){
+  h1{font-size:26px}
+  .num{font-size:36px}
+  .stats>div{padding-inline:10px}
+  .card{padding:20px 16px}
+}
+</style>
+
+<style>/* app */html{-webkit-text-size-adjust:100%}input,textarea,select{font-size:16px}</style>
+<main class="wrap">
+  <header>
+    <p class="eyebrow" id="today-label"></p>
+    <h1>戒酒輕盈紀錄</h1>
+    <p class="lede">記下喝了多少、為什麼想喝，以及隔天早上身體的感覺。</p>
+  </header>
+
+  <section class="stats" aria-label="摘要">
+    <div><span class="num" id="st-streak">0</span><span class="lab">連續無酒天數</span></div>
+    <div><span class="num" id="st-dry">0<small>/7</small></span><span class="lab">近 7 天無酒日</span></div>
+    <div><span class="num" id="st-drinks">0</span><span class="lab">近 7 天飲酒杯數</span></div>
+  </section>
+
+  <section aria-labelledby="h-days">
+    <div class="sec-head">
+      <h2 id="h-days">最近 14 天</h2>
+      <div class="legend" aria-hidden="true">
+        <span><i class="l-dry"></i>無酒</span>
+        <span><i class="l-drink"></i>有喝</span>
+        <span><i></i>未記</span>
+      </div>
+    </div>
+    <div class="days" id="days"></div>
+    <label class="pick" for="pick">補記更早的日子
+      <input type="date" id="pick">
+    </label>
+  </section>
+
+  <section class="card" id="entry" aria-labelledby="entry-title">
+    <div class="ehead">
+      <h2 id="entry-title"></h2>
+      <span class="etag" id="entry-tag"></span>
+    </div>
+
+    <fieldset>
+      <legend>這天有喝酒嗎？</legend>
+      <div class="seg">
+        <button type="button" class="opt opt-dry" data-g="drank" data-v="0" aria-pressed="false">沒喝</button>
+        <button type="button" class="opt opt-drink" data-g="drank" data-v="1" aria-pressed="false">有喝</button>
+      </div>
+    </fieldset>
+
+    <div id="drinkbox" hidden>
+      <div>
+        <span class="lbl" id="l-drinks">喝了幾杯</span>
+        <div class="step" role="group" aria-labelledby="l-drinks">
+          <button type="button" data-step="-1" aria-label="減一杯">−</button>
+          <output id="drinks" aria-live="polite">0</output>
+          <button type="button" data-step="1" aria-label="加一杯">+</button>
+          <p class="help">一杯生啤、一杯葡萄酒、一杯調酒各算一杯，大概就好。</p>
+        </div>
+      </div>
+      <fieldset>
+        <legend>在哪裡喝</legend>
+        <div class="chips" id="ctx-chips"></div>
+      </fieldset>
+    </div>
+
+    <fieldset>
+      <legend>想喝的衝動有多強</legend>
+      <div class="scale" id="craving"></div>
+      <div class="ends"><span>完全沒想</span><span>非常想喝</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>想喝（或喝下去）的原因</legend>
+      <div class="chips" id="trig-chips"></div>
+    </fieldset>
+
+    <div>
+      <span class="lbl">這天早上的狀態</span>
+      <p class="help" style="margin-bottom:12px">1 最差，5 最好。記的是起床當下的感覺。</p>
+      <div id="ratings"></div>
+    </div>
+
+    <div>
+      <label class="lbl" for="note">備註</label>
+      <textarea id="note" maxlength="2000" placeholder="當下的情緒、做了什麼替代、喝起來的感覺。"></textarea>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="primary" id="save">儲存</button>
+      <button type="button" class="ghost" id="clear" hidden>清除這天</button>
+      <span class="status" id="status" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="card soft" aria-labelledby="h-cmp">
+    <div>
+      <h2 id="h-cmp">喝酒隔天，早晨差多少</h2>
+      <p class="sub">把前一天有喝、沒喝的早晨狀態並排比較，滿分 5。</p>
+    </div>
+    <div id="cmp"></div>
+    <div class="tagsec" id="tagsec" hidden>
+      <span class="lbl" style="margin:0">最常出現的原因</span>
+      <div class="tags" id="tags"></div>
+    </div>
+  </section>
+
+  <p class="foot" id="foot">載入中…</p>
+</main>
+
+<script>
+(function(){
+'use strict';
+
+var WD=['日','一','二','三','四','五','六'];
+var CTX=['朋友聚餐／酒吧','在家獨飲','品飲活動','其他'];
+var TRIG=['想放鬆','壓力／心煩','無聊','社交氣氛','想品嚐風味','習慣順手','睡不著'];
+var RATINGS=[['sleep','昨晚睡眠'],['wake','起床感覺'],['eyes','眼睛舒適'],['mood','情緒']];
+var LS='sober-log-v1';
+
+var $=function(id){return document.getElementById(id)};
+var el=function(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+var pad=function(n){return String(n).padStart(2,'0')};
+var fmt=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var parse=function(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+var addDays=function(s,n){var d=parse(s);d.setDate(d.getDate()+n);return fmt(d)};
+var TODAY=fmt(new Date());
+var num=function(x){return typeof x==='number'&&isFinite(x)?x:null};
+var strs=function(a){return Array.isArray(a)?a.filter(function(x){return typeof x==='string'}):[]};
+
+var entries={}, sel=TODAY, draft=null, dirty=false, mode='local', col=null, pending=null, armed=false, armTimer=null;
+
+function blank(date){
+  return {date:date,drank:null,drinks:0,ctx:[],craving:null,triggers:[],sleep:null,wake:null,eyes:null,mood:null,note:''};
+}
+function norm(v,id){
+  return {date:id,drank:typeof v.drank==='boolean'?v.drank:null,drinks:num(v.drinks)||0,ctx:strs(v.ctx),
+    craving:num(v.craving),triggers:strs(v.triggers),sleep:num(v.sleep),wake:num(v.wake),eyes:num(v.eyes),mood:num(v.mood),
+    note:typeof v.note==='string'?v.note:''};
+}
+function isEmpty(d){
+  return d.drank===null&&d.craving===null&&!d.triggers.length&&d.sleep===null&&d.wake===null&&d.eyes===null&&d.mood===null&&!d.note.trim();
+}
+function clean(d){
+  var on=d.drank===true;
+  return {date:d.date,drank:d.drank,drinks:on?d.drinks:0,ctx:on?d.ctx:[],craving:d.craving,triggers:d.triggers,
+    sleep:d.sleep,wake:d.wake,eyes:d.eyes,mood:d.mood,note:d.note.trim().slice(0,2000),updatedAt:new Date().toISOString()};
+}
+function lsRead(){try{return JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){return {}}}
+function lsWrite(m){try{localStorage.setItem(LS,JSON.stringify(m))}catch(e){}}
+function normAll(m){var o={};Object.keys(m).forEach(function(k){if(m[k]&&typeof m[k]==='object')o[k]=norm(m[k],k)});return o}
+
+function labelFor(date){
+  var d=parse(date);
+  return (d.getMonth()+1)+'/'+d.getDate()+'（週'+WD[d.getDay()]+'）';
+}
+
+/* ---------- build static controls ---------- */
+function chip(g,v){return '<button type="button" class="chip" data-g="'+g+'" data-v="'+v+'" aria-pressed="false">'+v+'</button>'}
+$('ctx-chips').innerHTML=CTX.map(function(v){return chip('ctx',v)}).join('');
+$('trig-chips').innerHTML=TRIG.map(function(v){return chip('trig',v)}).join('');
+$('craving').innerHTML=[0,1,2,3,4,5].map(function(n){
+  return '<button type="button" data-g="craving" data-v="'+n+'" aria-pressed="false" aria-label="衝動 '+n+' 級">'+n+'</button>';
+}).join('');
+$('ratings').innerHTML=RATINGS.map(function(r){
+  return '<div class="rrow" role="group" aria-label="'+r[1]+'"><span class="rlab">'+r[1]+'</span><div class="rbtns">'+
+    [1,2,3,4,5].map(function(n){return '<button type="button" data-g="'+r[0]+'" data-v="'+n+'" aria-pressed="false" aria-label="'+r[1]+' '+n+' 分">'+n+'</button>'}).join('')+
+    '</div></div>';
+}).join('');
+
+var dayBtns=[];
+(function buildDays(){
+  var box=$('days');
+  for(var i=13;i>=0;i--){
+    var date=addDays(TODAY,-i);
+    var b=el('button','day');
+    b.type='button';
+    b.dataset.date=date;
+    var d=parse(date);
+    b.appendChild(el('span','wd',date===TODAY?'今天':WD[d.getDay()]));
+    b.appendChild(el('span','dn',String(d.getDate())));
+    b.appendChild(el('span','mark'));
+    box.appendChild(b);
+    dayBtns.push(b);
+  }
+})();
+$('pick').max=TODAY;
+$('today-label').textContent=TODAY+' · 週'+WD[parse(TODAY).getDay()];
+
+/* ---------- rendering ---------- */
+function stateOf(date){
+  var e=entries[date];
+  if(!e) return 'none';
+  return e.drank===true?'drink':e.drank===false?'dry':'part';
+}
+function updateDays(){
+  dayBtns.forEach(function(b){
+    var date=b.dataset.date, s=stateOf(date);
+    b.className='day'+(s==='dry'?' is-dry':s==='drink'?' is-drink':s==='part'?' is-part':'')+(date===TODAY?' is-today':'')+(date===sel?' is-sel':'');
+    b.setAttribute('aria-pressed',date===sel);
+    b.setAttribute('aria-label',labelFor(date)+'，'+(s==='dry'?'沒喝酒':s==='drink'?'有喝酒':s==='part'?'已部分記錄':'尚未記錄'));
+  });
+  $('pick').value=sel;
+}
+function renderStats(){
+  var st=0, d=TODAY, t=entries[d];
+  if(t&&t.drank===true){st=0}
+  else{
+    if(!(t&&t.drank===false)) d=addDays(d,-1);
+    while(entries[d]&&entries[d].drank===false){st++;d=addDays(d,-1)}
+  }
+  var dry=0, drinks=0;
+  for(var i=0;i<7;i++){
+    var e=entries[addDays(TODAY,-i)];
+    if(!e) continue;
+    if(e.drank===false) dry++;
+    if(e.drank===true) drinks+=e.drinks;
+  }
+  $('st-streak').textContent=st;
+  $('st-dry').innerHTML=dry+'<small>/7</small>';
+  $('st-drinks').textContent=drinks;
+}
+function mean(g,k){return g.c[k]?g.s[k]/g.c[k]:null}
+function renderCompare(){
+  var box=$('cmp'); box.textContent='';
+  var G={dry:{days:0,s:{},c:{}},drink:{days:0,s:{},c:{}}};
+  Object.keys(entries).forEach(function(date){
+    var e=entries[date], p=entries[addDays(date,-1)];
+    if(!p||p.drank===null) return;
+    var g=G[p.drank?'drink':'dry'], any=false;
+    RATINGS.forEach(function(r){
+      var k=r[0];
+      if(e[k]!=null){g.s[k]=(g.s[k]||0)+e[k];g.c[k]=(g.c[k]||0)+1;any=true}
+    });
+    if(any) g.days++;
+  });
+  if(!G.dry.days&&!G.drink.days){
+    box.appendChild(el('p','hint','連續幾天記下早晨的睡眠和起床感覺，並記錄前一天有沒有喝，這裡就會出現「沒喝隔天」和「喝酒隔天」的對照。'));
+  }else{
+    RATINGS.forEach(function(r){
+      var row=el('div','mrow');
+      row.appendChild(el('div','mlab',r[1]));
+      [['dry','沒喝隔天'],['drink','喝酒隔天']].forEach(function(x){
+        var m=mean(G[x[0]],r[0]);
+        var line=el('div','bline');
+        line.appendChild(el('span','bname',x[1]));
+        var tr=el('div','track');
+        if(m!=null){
+          var f=el('div','fill '+x[0],m.toFixed(1));
+          f.style.width=Math.max(14,m/5*100)+'%';
+          tr.appendChild(f);
+        }else{
+          tr.appendChild(el('span','na','尚無資料'));
+        }
+        line.appendChild(tr);
+        row.appendChild(line);
+      });
+      box.appendChild(row);
+    });
+    var msg='樣本：沒喝隔天 '+G.dry.days+' 天，喝酒隔天 '+G.drink.days+' 天。';
+    if(!G.dry.days||!G.drink.days) msg+=' 其中一組還沒有資料，暫時無法比較。';
+    else if(Math.min(G.dry.days,G.drink.days)<3) msg+=' 任一組少於 3 天時，數字還會大幅變動，先當參考。';
+    box.appendChild(el('p','cnote',msg));
+  }
+  var cnt={};
+  Object.keys(entries).forEach(function(k){entries[k].triggers.forEach(function(t){cnt[t]=(cnt[t]||0)+1})});
+  var top=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}).slice(0,6);
+  var tg=$('tags'); tg.textContent='';
+  top.forEach(function(t){
+    var s=el('span','tag',t); s.appendChild(el('b',null,String(cnt[t]))); tg.appendChild(s);
+  });
+  $('tagsec').hidden=!top.length;
+}
+function setStatus(msg,warn){
+  var s=$('status'); s.textContent=msg||''; s.className='status'+(warn?' warn':'');
+}
+function idleStatus(){
+  setStatus(dirty?'有未儲存的變更':'',dirty);
+}
+function updateTitle(){
+  $('entry-title').textContent=labelFor(sel);
+  $('entry-tag').textContent=sel===TODAY?(entries[sel]?'今天 · 已記錄':'今天'):(entries[sel]?'已記錄':'補記');
+  $('clear').hidden=!entries[sel];
+}
+function syncForm(){
+  var btns=document.querySelectorAll('#entry [data-g]');
+  for(var i=0;i<btns.length;i++){
+    var b=btns[i], g=b.dataset.g, v=b.dataset.v, on=false;
+    if(g==='drank') on=draft.drank!==null&&String(draft.drank?1:0)===v;
+    else if(g==='ctx') on=draft.ctx.indexOf(v)>-1;
+    else if(g==='trig') on=draft.triggers.indexOf(v)>-1;
+    else on=draft[g]!==null&&String(draft[g])===v;
+    b.setAttribute('aria-pressed',on);
+  }
+  $('drinkbox').hidden=draft.drank!==true;
+  $('drinks').textContent=draft.drinks;
+}
+function loadDraft(date){
+  var e=entries[date];
+  draft=e?JSON.parse(JSON.stringify(e)):blank(date);
+  $('note').value=draft.note;
+  dirty=false; pending=null; disarm();
+  syncForm(); updateTitle(); idleStatus();
+}
+function afterEntries(){
+  renderStats(); updateDays(); renderCompare();
+  if(!dirty) loadDraft(sel); else updateTitle();
+}
+function setFoot(){
+  $('foot').textContent=mode==='db'
+    ?'資料存在你的帳號，只有這個頁面的擁有者讀得到。'
+    :'資料只存在這支手機的 App 裡。記得定期到「備份」分頁匯出一份。';
+}
+
+/* ---------- interaction ---------- */
+function markDirty(){dirty=true;pending=null;syncForm();idleStatus()}
+function toggle(arr,v){var i=arr.indexOf(v);if(i>-1)arr.splice(i,1);else arr.push(v)}
+
+$('entry').addEventListener('click',function(e){
+  var b=e.target.closest('button');
+  if(!b) return;
+  if(b.dataset.step){
+    var n=draft.drinks+Number(b.dataset.step);
+    draft.drinks=Math.min(20,Math.max(0,n));
+    if(Number(b.dataset.step)>0) draft.drank=true;
+    markDirty(); return;
+  }
+  var g=b.dataset.g, v=b.dataset.v;
+  if(!g) return;
+  if(g==='drank'){
+    draft.drank=v==='1';
+    if(!draft.drank){draft.drinks=0;draft.ctx=[]}
+  }else if(g==='ctx') toggle(draft.ctx,v);
+  else if(g==='trig') toggle(draft.triggers,v);
+  else{
+    var x=Number(v);
+    draft[g]=draft[g]===x?null:x;
+  }
+  markDirty();
+});
+$('note').addEventListener('input',function(){draft.note=$('note').value;dirty=true;pending=null;idleStatus()});
+
+function selectDate(date){
+  if(!date||date===sel||date>TODAY) {updateDays();return}
+  if(dirty&&pending!==date){
+    pending=date;
+    setStatus('這天還沒儲存。再選一次該日期，會放棄這些變更。',true);
+    return;
+  }
+  sel=date; loadDraft(date); updateDays();
+}
+$('days').addEventListener('click',function(e){
+  var b=e.target.closest('.day'); if(b) selectDate(b.dataset.date);
+});
+$('pick').addEventListener('change',function(){selectDate($('pick').value)});
+
+function disarm(){
+  armed=false; clearTimeout(armTimer);
+  var c=$('clear'); c.textContent='清除這天'; c.classList.remove('armed');
+}
+async function save(){
+  if(isEmpty(draft)){setStatus('先填一項再儲存。',true);return}
+  var btn=$('save'); btn.disabled=true; setStatus('儲存中…');
+  var data=clean(draft);
+  try{
+    if(mode==='db'){
+      await col.doc(sel).set(data);
+    }else{
+      var m=lsRead(); m[sel]=data; lsWrite(m);
+    }
+    entries[sel]=norm(data,sel);
+    dirty=false;
+    afterEntries();
+    setStatus('已儲存');
+  }catch(err){
+    var c=err&&err.code;
+    setStatus(c==='quota_exceeded'?'資料量已滿，無法再新增。':'儲存失敗，稍後再試一次。',true);
+  }finally{btn.disabled=false}
+}
+async function clearDay(){
+  if(!armed){
+    armed=true;
+    var c=$('clear'); c.textContent='再按一次確認清除'; c.classList.add('armed');
+    armTimer=setTimeout(disarm,4000);
+    return;
+  }
+  disarm();
+  try{
+    if(mode==='db'){await col.doc(sel).delete()}
+    else{var m=lsRead(); delete m[sel]; lsWrite(m)}
+    delete entries[sel];
+    dirty=false;
+    afterEntries();
+    setStatus('已清除');
+  }catch(err){setStatus('清除失敗，稍後再試一次。',true)}
+}
+$('save').addEventListener('click',save);
+$('clear').addEventListener('click',clearDay);
+
+/* ---------- storage ---------- */
+async function init(){
+  loadDraft(sel); renderStats(); updateDays(); renderCompare();
+  try{
+    if(window.claude&&window.claude.use){
+      var r=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+      var db=r[0], user=r[1];
+      var owner=user?await user.isOwner():false;
+      if(db&&owner) col=db.collection('log');
+    }
+  }catch(e){col=null}
+  if(col){
+    mode='db'; setFoot();
+    var timer=setTimeout(function(){$('foot').textContent='連線較慢，資料可能還沒載入完。'},10000);
+    col.onSnapshot(function(snap){
+      if(!snap.metadata.fromCache){clearTimeout(timer);setFoot()}
+      var m={};
+      snap.docs.forEach(function(d){var v=d.data();if(v) m[d.id]=norm(v,d.id)});
+      entries=m; afterEntries();
+    },function(err){
+      clearTimeout(timer);
+      $('foot').textContent='資料暫時讀不到，請稍後重新整理。';
+    });
+  }else{
+    mode='local'; setFoot();
+    entries=normAll(lsRead()); afterEntries();
+  }
+}
+init();
+})();
+</script>
+
+</body></html>
